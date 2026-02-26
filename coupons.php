@@ -122,6 +122,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     Add New coupon</h3>
                 <form method="POST" enctype="multipart/form-data">
                     <div class="form-row">
+                        <label for="coupon-type">Select coupon type:</label>
+                            <select id="coupon-type" name="coupon-type">
+                            <option value="fixed">Fixed discound</option>
+                             <option value="%_discount">% discount</option>
+                             <option value="Full">Full dicount</option>
+                               <option value="credit-card">Credit Card</option>
+                          </select>
+                    </div>
+                    <div class="form-row">
                         <input type="text" name="name" placeholder="Coupon Name" required>
                         <input type="text" name="category" placeholder="Category" required>
                     </div>
