@@ -68,7 +68,6 @@ elseif (isset($_FILES['prescription']) && $_FILES['prescription']['error'] == 0)
 // Insert Order
 $sql = "INSERT INTO orders (user_id, total_amount, payment_method, payment_status, transaction_id, status, prescription_image, created_at) VALUES (?, ?, ?, ?, ?, 'pending', ?, NOW())";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("idssss", $user_id, $total_amount, $payment_method, $payment_status, $transaction_id, $prescription_path);
 
 if ($stmt->execute()) {
     $order_id = $stmt->insert_id;

@@ -9,153 +9,186 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $msg = "";
 
-// Process form submission
+/* ================= ADD COUPON ================= */
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['add_medicine'])) {
-        $name = $conn->real_escape_string($_POST['name']);
-        $category = $conn->real_escape_string($_POST['category']);
-        $price = $conn->real_escape_string($_POST['price']);
-        $quantity = $conn->real_escape_string($_POST['quantity']);
-        $description = $conn->real_escape_string($_POST['description']);
 
-        // Upload image
-        $target_dir = "uploads/medicines/";
-        if (!is_dir($target_dir))
-            mkdir($target_dir, 0777, true);
+    if (isset($_POST['add_coupon'])) {
 
-        $image = "";
-        if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-            $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-            $filename = time() . "_" . preg_replace("/[^a-zA-Z0-9]/", "", $name) . "." . $ext;
-            $target_file = $target_dir . $filename;
+        $code = $conn->real_escape_string($_POST['coupon_code']);
+        $type = $conn->real_escape_string($_POST['coupon_type']);
+        $discount = $_POST['discount_value'];
+        $min_order = $_POST['min_order_amount'];
+        $limit = $_POST['usage_limit'];
+        $expiry = $_POST['expiry_date'];
 
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-                $image = $target_file;
-            }
+        if ($type == "full") {
+            $discount = 0;
         }
 
-        $sql = "INSERT INTO medicines (name, category, price, quantity, image, description) VALUES ('$name', '$category', '$price', '$quantity', '$image', '$description')";
+        $sql = "INSERT INTO coupons
+                (coupon_code, coupon_type, discount_value, min_order_amount, usage_limit, expiry_date)
+                VALUES
+                ('$code','$type','$discount','$min_order','$limit','$expiry')";
+
         if ($conn->query($sql)) {
-            $msg = "Medicine added successfully!";
-        }
-        else {
+            $msg = "Coupon created successfully!";
+        } else {
             $msg = "Error: " . $conn->error;
         }
     }
-    elseif (isset($_POST['delete_medicine'])) {
+
+    /* ================= DELETE COUPON ================= */
+    if (isset($_POST['delete_coupon'])) {
         $id = $_POST['id'];
-        $conn->query("DELETE FROM medicines WHERE id='$id'");
-        $msg = "Medicine deleted successfully!";
+        $conn->query("DELETE FROM coupons WHERE id='$id'");
+        $msg = "Coupon deleted successfully!";
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Coupons- Admin</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+<meta charset="UTF-8">
+<title>Manage Coupons</title>
 
-        .form-row input,
-        .form-row select {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-        .btn-action {
-            padding: 6px 12px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            margin-right: 5px;
-            display: inline-block;
-        }
+<style>
+.form-row{
+    display:flex;
+    gap:15px;
+    margin-bottom:15px;
+}
 
-        .btn-edit {
-            background: #dfe6e9;
-            color: #2d3436;
-        }
+.form-row input,
+.form-row select{
+    flex:1;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:6px;
+}
 
-        .btn-edit:hover {
-            background: #b2bec3;
-        }
-
-        .btn-delete {
-            background: #fab1a0;
-            color: #d63031;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-delete:hover {
-            background: #ff7675;
-            color: white;
-        }
-    </style>
+.btn-delete{
+    background:#fab1a0;
+    color:#d63031;
+    border:none;
+    padding:6px 10px;
+    cursor:pointer;
+    border-radius:4px;
+}
+</style>
 </head>
 
 <body>
-    <div class="admin-container">
-        <?php include 'admin_sidebar.php'; ?>
 
-        <div class="main-content">
-            <h1>Manage Coupons</h1>
-            <?php if ($msg)
-    echo "<div class='alert alert-success'>$msg</div>"; ?>
+<div class="admin-container">
+<?php include 'admin_sidebar.php'; ?>
 
-            <!-- Add Medicine Form -->
-            <div
-                style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px;">
-                <h3
-                    style="margin-bottom: 20px; color: var(--text-dark); border-bottom: 2px solid #f1f1f1; padding-bottom: 10px;">
-                    Add New coupon</h3>
-                <form method="POST" enctype="multipart/form-data">
-                    <div class="form-row">
-                        <label for="coupon-type">Select coupon type:</label>
-                            <select id="coupon-type" name="coupon-type">
-                            <option value="fixed">Fixed discound</option>
-                             <option value="%_discount">% discount</option>
-                             <option value="Full">Full dicount</option>
-                               <option value="credit-card">Credit Card</option>
-                          </select>
-                    </div>
-                    <div class="form-row">
-                        <input type="text" name="name" placeholder="Coupon Name" required>
-                        <input type="text" name="category" placeholder="Category" required>
-                    </div>
-                    <div class="form-row">
-                        
-                        <input type="text" name="code" placeholder="Coupon Code" required>
-                         <input type="number" name="price" placeholder="price" required>
-                    </div>
-                    <div class="form-row">
-                        <div style="flex: 1;">
-                            <label
-                                style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #666; font-weight: 500;">Product
-                                Image</label>
-                            <input type="file" name="image" accept="image/*" required
-                                style="border: 1px solid #ddd; width: 100%; padding: 8px;">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <input type="text" name="description" placeholder="Description" required style="width: 100%;">
-                    </div>
-                    <button type="submit" name="add_medicine" class="btn"
-                        style="background: var(--primary-color); color: white; padding: 12px 25px; border: none; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 1rem;">
-                        <i class="fas fa-plus"></i> Add Medicine
-                    </button>
-                </form>
-            </div>
+<div class="main-content">
 
-           
+<h1>Manage Coupons</h1>
+
+<?php if($msg) echo "<div class='alert alert-success'>$msg</div>"; ?>
+
+<!-- ================= ADD COUPON ================= -->
+<div style="background:white;padding:25px;border-radius:8px;margin-bottom:30px;">
+
+<h3>Add New Coupon</h3>
+
+<form method="POST">
+
+<div class="form-row">
+<input type="text" name="coupon_code" placeholder="Coupon Code (SAVE10)" required>
+
+<select name="coupon_type" required>
+    <option value="">Select Type</option>
+    <option value="fixed">Fixed Discount</option>
+    <option value="percentage">Percentage Discount</option>
+    <option value="full">Full Discount</option>
+</select>
+</div>
+
+<div class="form-row">
+<input type="number" step="0.01" name="discount_value" placeholder="Discount Value">
+<input type="number" step="0.01" name="min_order_amount" placeholder="Minimum Order Amount">
+</div>
+
+<div class="form-row">
+<input type="number" name="usage_limit" placeholder="Usage Limit">
+<input type="date" name="expiry_date">
+</div>
+
+<button type="submit" name="add_coupon"
+style="background:var(--primary-color);color:white;padding:12px 25px;border:none;border-radius:6px;cursor:pointer;">
+<i class="fas fa-plus"></i> Create Coupon
+</button>
+
+</form>
+</div>
+
+
+<!-- ================= COUPON LIST ================= -->
+<div style="background:white;padding:25px;border-radius:8px;">
+
+<h3>Existing Coupons</h3>
+
+<table class="admin-table">
+<thead>
+<tr>
+<th>ID</th>
+<th>Code</th>
+<th>Type</th>
+<th>Discount</th>
+<th>Min Order</th>
+<th>Expiry</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+<?php
+$result = $conn->query("SELECT * FROM coupons ORDER BY id DESC");
+
+while ($row = $result->fetch_assoc()) {
+
+if($row['coupon_type']=='percentage')
+    $discount = $row['discount_value']."%";
+elseif($row['coupon_type']=='fixed')
+    $discount = "Rs. ".$row['discount_value'];
+else
+    $discount = "Full Discount";
+
+echo "
+<tr>
+<td>{$row['id']}</td>
+<td><strong>{$row['coupon_code']}</strong></td>
+<td>".ucfirst($row['coupon_type'])."</td>
+<td>$discount</td>
+<td>Rs. {$row['min_order_amount']}</td>
+<td>{$row['expiry_date']}</td>
+<td>{$row['status']}</td>
+<td>
+<form method='POST' onsubmit='return confirm(\"Delete this coupon?\");'>
+<input type='hidden' name='id' value='{$row['id']}'>
+<button type='submit' name='delete_coupon' class='btn-delete'>
+<i class='fas fa-trash'></i>
+</button>
+</form>
+</td>
+</tr>";
+}
+?>
+
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>

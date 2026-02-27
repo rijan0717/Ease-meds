@@ -94,6 +94,37 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Coupons Table
+CREATE TABLE IF NOT EXISTS coupons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    discount_type ENUM('percentage', 'fixed') DEFAULT 'percentage',
+    discount_value DECIMAL(10, 2) NOT NULL,
+    max_discount DECIMAL(10, 2),
+    min_order_amount DECIMAL(10, 2) DEFAULT 0,
+    max_uses INT,
+    times_used INT DEFAULT 0,
+    valid_from DATETIME,
+    valid_to DATETIME,
+    is_active BOOLEAN DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Order Coupons Table (to track which coupon was used on which order)
+CREATE TABLE IF NOT EXISTS order_coupons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    coupon_id INT NOT NULL,
+    discount_amount DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (coupon_id) REFERENCES coupons(id)
+);
+
+-- Add coupon_id to orders table
+ALTER TABLE orders ADD COLUMN coupon_id INT DEFAULT NULL AFTER transaction_id;
+ALTER TABLE orders ADD COLUMN discount_amount DECIMAL(10, 2) DEFAULT 0 AFTER coupon_id;
+
 -- SAMPLE DATA OF MEDICINE 
 
 INSERT INTO medicines (name, category, description, price, quantity, image) VALUES 

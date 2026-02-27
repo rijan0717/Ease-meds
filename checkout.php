@@ -118,13 +118,15 @@ endif; ?>
                 </label>
 
                 <label class="payment-option">
+                    <a href=""></a>
                     <input type="radio" name="payment" value="cod">
                     <i class="fas fa-money-bill-wave fa-2x"></i>
                     <strong>Cash on Delivery</strong>
                 </label>
             </div>
-
+<a href="http://localhost/Ease-meds/index.php">
             <button type="submit" class="btn-place-order" id="placeOrderBtn">Place Order</button>
+            </a>
         </form>
     </div>
 </div>
