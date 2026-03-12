@@ -45,6 +45,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
+    /* ================= EDIT COUPON ================= */
+    if (isset($_POST['edit_coupon'])) {
+        $id        = (int)$_POST['edit_id'];
+        $code      = $conn->real_escape_string($_POST['edit_coupon_code']);
+        $type      = $conn->real_escape_string($_POST['edit_coupon_type']);
+        $discount  = (float)$_POST['edit_discount_value'];
+        $min_order = (float)$_POST['edit_min_order_amount'];
+        $limit     = (int)$_POST['edit_usage_limit'];
+        $expiry    = $_POST['edit_expiry_date'];
+        $status    = $conn->real_escape_string($_POST['edit_status']);
+
+        if ($type == "full") $discount = 0;
+
+        $medicine_ids = "";
+        if ($type == "medicines" && isset($_POST['edit_medicine_ids']))
+            $medicine_ids = $conn->real_escape_string(implode(',', $_POST['edit_medicine_ids']));
+
+        $sql = "UPDATE coupons SET
+                    coupon_code='$code', coupon_type='$type', discount_value='$discount',
+                    min_order_amount='$min_order', usage_limit='$limit',
+                    expiry_date='$expiry', status='$status', medicine_ids='$medicine_ids'
+                WHERE id='$id'";
+
+        if ($conn->query($sql)) { $msg = "✓ Coupon updated successfully!"; $msg_type = "success"; }
+        else { $msg = "Error: " . $conn->error; $msg_type = "error"; }
+    }
+
     /* ================= DELETE COUPON ================= */
     if (isset($_POST['delete_coupon'])) {
         $id = (int)$_POST['id'];
@@ -60,6 +87,7 @@ $all_medicines = [];
 while ($med = $medicines_result->fetch_assoc()) {
     $all_medicines[] = $med;
 }
+$medicines_json = json_encode($all_medicines);
 ?>
 
 <!DOCTYPE html>
@@ -93,6 +121,56 @@ while ($med = $medicines_result->fetch_assoc()) {
     padding: 6px 10px;
     cursor: pointer;
     border-radius: 4px;
+}
+.btn-edit {
+    background: #b2d8f7;
+    color: #0984e3;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 4px;
+}
+.btn-edit:hover { background: #74b9e8; }
+
+/* ---- Edit Modal ---- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+    background: white;
+    border-radius: 10px;
+    width: 620px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    position: relative;
+    animation: modalIn 0.2s ease;
+}
+@keyframes modalIn { from { transform: scale(0.95); opacity:0; } to { transform: scale(1); opacity:1; } }
+.modal-close {
+    position: absolute;
+    top: 14px; right: 18px;
+    background: none; border: none;
+    font-size: 20px; cursor: pointer; color: #888;
+}
+.modal-close:hover { color: #d63031; }
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #333; }
+/* Edit modal medicine panel */
+#edit-medicine-selector-panel {
+    display: none;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 /* ---- Medicine Selector Panel ---- */
@@ -517,8 +595,14 @@ while ($row = $result->fetch_assoc()) {
     <td>$medCount</td>
     <td>{$row['expiry_date']}</td>
     <td>{$row['status']}</td>
-    <td>
-    <form method='POST' onsubmit='return confirm(\"Delete this coupon?\");'>
+    <td style='white-space:nowrap;'>
+    <button type='button' class='btn-edit'
+        onclick='openEditModal({$row['id']}, \"{$row['coupon_code']}\", \"{$row['coupon_type']}\",
+            {$row['discount_value']}, {$row['min_order_amount']}, {$row['usage_limit']},
+            \"{$row['expiry_date']}\", \"{$row['status']}\", \"{$row['medicine_ids']}\")'>
+        <i class='fas fa-edit'></i>
+    </button>
+    <form method='POST' style='display:inline;' onsubmit='return confirm(\"Delete this coupon?\");'>
     <input type='hidden' name='id' value='{$row['id']}'>
     <button type='submit' name='delete_coupon' class='btn-delete'>
     <i class='fas fa-trash'></i>
@@ -535,55 +619,174 @@ while ($row = $result->fetch_assoc()) {
 </div>
 </div>
 
+<!-- ================= EDIT MODAL ================= -->
+<div class="modal-overlay" id="editModal">
+<div class="modal-box">
+    <button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-title"><i class="fas fa-edit" style="color:#0984e3;margin-right:8px;"></i>Edit Coupon</div>
+
+    <form method="POST">
+    <input type="hidden" name="edit_id" id="edit_id">
+
+    <div class="form-row">
+        <input type="text" name="edit_coupon_code" id="edit_coupon_code" placeholder="Coupon Code" required>
+        <select name="edit_coupon_type" id="edit_coupon_type" required onchange="toggleEditMedicinePanel(this.value)">
+            <option value="fixed">Fixed Discount</option>
+            <option value="percentage">Percentage Discount</option>
+            <option value="full">Full Discount</option>
+            <option value="medicines">Medicines (specific products)</option>
+        </select>
+    </div>
+
+    <!-- Edit Medicine Selector -->
+    <div id="edit-medicine-selector-panel">
+        <div class="med-panel-header">
+            <span><i class="fas fa-capsules" style="margin-right:7px;color:#0984e3;"></i>Select Applicable Medicines</span>
+            <span class="selected-count" id="editSelectedCount">0 selected</span>
+        </div>
+        <div class="med-search-bar">
+            <input type="text" id="editMedSearchInput" placeholder="🔍  Search medicines..." oninput="filterEditMedicines(this.value)">
+        </div>
+        <div class="med-grid" id="editMedicineGrid">
+            <!-- populated by JS -->
+        </div>
+        <div class="med-select-actions">
+            <button type="button" onclick="editSelectAll()"><i class="fas fa-check-double"></i> Select All</button>
+            <button type="button" onclick="editClearAll()"><i class="fas fa-times"></i> Clear All</button>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <input type="number" step="0.01" name="edit_discount_value" id="edit_discount_value" placeholder="Discount Value">
+        <input type="number" step="0.01" name="edit_min_order_amount" id="edit_min_order_amount" placeholder="Min Order Amount">
+    </div>
+    <div class="form-row">
+        <input type="number" name="edit_usage_limit" id="edit_usage_limit" placeholder="Usage Limit">
+        <input type="date" name="edit_expiry_date" id="edit_expiry_date">
+    </div>
+    <div class="form-row">
+        <select name="edit_status" id="edit_status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </div>
+
+    <button type="submit" name="edit_coupon"
+        style="background:var(--primary-color);color:white;padding:12px 25px;border:none;border-radius:6px;cursor:pointer;">
+        <i class="fas fa-save"></i> Save Changes
+    </button>
+    <button type="button" onclick="closeEditModal()"
+        style="background:#f0f0f0;color:#555;padding:12px 20px;border:none;border-radius:6px;cursor:pointer;margin-left:10px;">
+        Cancel
+    </button>
+    </form>
+</div>
+</div>
+
 <script>
+const allMedicines = <?= $medicines_json ?? '[]' ?>;
+
+/* ===== ADD FORM helpers ===== */
 function toggleMedicinePanel(type) {
     const panel = document.getElementById('medicine-selector-panel');
     const discountInput = document.getElementById('discountValue');
-
-    if (type === 'medicines') {
-        panel.style.display = 'block';
-        discountInput.placeholder = 'Discount Value (for these medicines)';
-    } else {
-        panel.style.display = 'none';
-        clearAllMeds();
-    }
-
-    if (type === 'full') {
-        discountInput.value = '';
-        discountInput.disabled = true;
-        discountInput.placeholder = 'N/A (Full discount)';
-    } else {
-        discountInput.disabled = false;
-        if (type !== 'medicines') discountInput.placeholder = 'Discount Value';
-    }
+    panel.style.display = (type === 'medicines') ? 'block' : 'none';
+    if (type !== 'medicines') clearAllMeds();
+    discountInput.disabled = (type === 'full');
+    discountInput.value = (type === 'full') ? '' : discountInput.value;
+    discountInput.placeholder = type === 'full' ? 'N/A (Full discount)' : 'Discount Value';
 }
-
 function updateCount() {
     const checked = document.querySelectorAll('#medicineGrid input[type="checkbox"]:checked').length;
     document.getElementById('selectedCount').textContent = checked + ' selected';
 }
-
 function filterMedicines(query) {
-    const items = document.querySelectorAll('#medicineGrid .med-item');
     const q = query.toLowerCase().trim();
-    items.forEach(item => {
+    document.querySelectorAll('#medicineGrid .med-item').forEach(item => {
         const name = item.querySelector('input').dataset.name || '';
         item.style.display = (!q || name.includes(q)) ? '' : 'none';
     });
 }
-
 function selectAllMeds() {
     document.querySelectorAll('#medicineGrid .med-item').forEach(item => {
-        if (item.style.display !== 'none') {
-            item.querySelector('input').checked = true;
-        }
+        if (item.style.display !== 'none') item.querySelector('input').checked = true;
     });
     updateCount();
 }
-
 function clearAllMeds() {
     document.querySelectorAll('#medicineGrid input[type="checkbox"]').forEach(cb => cb.checked = false);
     updateCount();
+}
+
+/* ===== EDIT MODAL helpers ===== */
+function openEditModal(id, code, type, discount, minOrder, limit, expiry, status, medicineIds) {
+    document.getElementById('edit_id').value             = id;
+    document.getElementById('edit_coupon_code').value    = code;
+    document.getElementById('edit_coupon_type').value    = type;
+    document.getElementById('edit_discount_value').value = discount;
+    document.getElementById('edit_min_order_amount').value = minOrder;
+    document.getElementById('edit_usage_limit').value    = limit;
+    document.getElementById('edit_expiry_date').value    = expiry;
+    document.getElementById('edit_status').value         = status;
+
+    // Build medicine checkboxes
+    buildEditMedicineGrid(medicineIds);
+    toggleEditMedicinePanel(type);
+
+    document.getElementById('editModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+// Close modal if clicking overlay background
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
+
+function buildEditMedicineGrid(selectedIds) {
+    const grid = document.getElementById('editMedicineGrid');
+    const ids = selectedIds ? selectedIds.split(',').map(s => s.trim()) : [];
+    grid.innerHTML = '';
+    allMedicines.forEach(med => {
+        const checked = ids.includes(String(med.id)) ? 'checked' : '';
+        grid.innerHTML += `
+        <label class="med-item" onclick="updateEditCount()">
+            <input type="checkbox" name="edit_medicine_ids[]" value="${med.id}"
+                   data-name="${med.name.toLowerCase()}" ${checked}>
+            <span class="med-name">${med.name}</span>
+            <span class="med-price">Rs.${parseFloat(med.price).toFixed(2)}</span>
+        </label>`;
+    });
+    updateEditCount();
+}
+function updateEditCount() {
+    const checked = document.querySelectorAll('#editMedicineGrid input:checked').length;
+    document.getElementById('editSelectedCount').textContent = checked + ' selected';
+}
+function toggleEditMedicinePanel(type) {
+    const panel = document.getElementById('edit-medicine-selector-panel');
+    panel.style.display = (type === 'medicines') ? 'block' : 'none';
+    const dv = document.getElementById('edit_discount_value');
+    dv.disabled = (type === 'full');
+}
+function filterEditMedicines(query) {
+    const q = query.toLowerCase().trim();
+    document.querySelectorAll('#editMedicineGrid .med-item').forEach(item => {
+        const name = item.querySelector('input').dataset.name || '';
+        item.style.display = (!q || name.includes(q)) ? '' : 'none';
+    });
+}
+function editSelectAll() {
+    document.querySelectorAll('#editMedicineGrid .med-item').forEach(item => {
+        if (item.style.display !== 'none') item.querySelector('input').checked = true;
+    });
+    updateEditCount();
+}
+function editClearAll() {
+    document.querySelectorAll('#editMedicineGrid input[type="checkbox"]').forEach(cb => cb.checked = false);
+    updateEditCount();
 }
 </script>
 
