@@ -260,34 +260,44 @@ $medicines_json = json_encode($all_medicines);
 <?php
 $result = $conn->query("SELECT * FROM coupons ORDER BY id DESC");
 while ($row = $result->fetch_assoc()) {
-    if ($row['coupon_type'] == 'percentage')   $discount = $row['discount_value'] . "%";
-    elseif ($row['coupon_type'] == 'fixed')    $discount = "Rs. " . $row['discount_value'];
-    elseif ($row['coupon_type'] == 'full')     $discount = "Full Discount";
-    else                                       $discount = "Rs. " . $row['discount_value'];
+    $cid      = $row['id'];
+    $ccode    = htmlspecialchars($row['coupon_code'],   ENT_QUOTES);
+    $ctype    = htmlspecialchars($row['coupon_type'],   ENT_QUOTES);
+    $cdisc    = $row['discount_value'];
+    $cmin     = $row['min_order_amount'];
+    $climit   = $row['usage_limit'];
+    $cexpiry  = $row['expiry_date'];
+    $cstatus  = $row['status'];
+    $cmeds    = $row['medicine_ids'];
 
-    $medCount = ($row['coupon_type'] == 'medicines' && !empty($row['medicine_ids']))
+    if ($ctype == 'percentage')  $discount = $cdisc . "%";
+    elseif ($ctype == 'fixed')   $discount = "Rs. " . $cdisc;
+    elseif ($ctype == 'full')    $discount = "Full Discount";
+    else                         $discount = "Rs. " . $cdisc;
+
+    $medCount = ($ctype == 'medicines' && !empty($cmeds))
         ? '<span style="background:#e0f0ff;color:#0984e3;padding:2px 8px;border-radius:4px;font-size:12px;">'
-            . count(explode(',', $row['medicine_ids'])) . ' medicine(s)</span>'
+            . count(explode(',', $cmeds)) . ' medicine(s)</span>'
         : '<span style="color:#ccc;font-size:12px;">—</span>';
 
     echo "<tr>
-        <td>{$row['id']}</td>
-        <td><strong>{$row['coupon_code']}</strong></td>
-        <td>" . ucfirst($row['coupon_type']) . "</td>
+        <td>$cid</td>
+        <td><strong>$ccode</strong></td>
+        <td>" . ucfirst($ctype) . "</td>
         <td>$discount</td>
-        <td>Rs. {$row['min_order_amount']}</td>
+        <td>Rs. $cmin</td>
         <td>$medCount</td>
-        <td>{$row['expiry_date']}</td>
-        <td>{$row['status']}</td>
+        <td>$cexpiry</td>
+        <td>$cstatus</td>
         <td style='white-space:nowrap;'>
             <button type='button' class='btn-edit'
-                onclick='openEditModal({$row[\"id\"]}, \"{$row[\"coupon_code\"]}\", \"{$row[\"coupon_type\"]}\",
-                    {$row[\"discount_value\"]}, {$row[\"min_order_amount\"]}, {$row[\"usage_limit\"]},
-                    \"{$row[\"expiry_date\"]}\", \"{$row[\"status\"]}\", \"{$row[\"medicine_ids\"]}\")'>
+                onclick='openEditModal($cid, \"$ccode\", \"$ctype\",
+                    $cdisc, $cmin, $climit,
+                    \"$cexpiry\", \"$cstatus\", \"$cmeds\")'>
                 <i class='fas fa-edit'></i>
             </button>
             <form method='POST' style='display:inline;' onsubmit='return confirm(\"Delete this coupon?\");'>
-                <input type='hidden' name='id' value='{$row[\"id\"]}'>
+                <input type='hidden' name='id' value='$cid'>
                 <button type='submit' name='delete_coupon' class='btn-delete'><i class='fas fa-trash'></i></button>
             </form>
         </td>
