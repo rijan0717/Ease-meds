@@ -1,6 +1,6 @@
 <?php
-include 'header.php';
-include 'config.php'; // Assuming DB connection
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/config.php'; // Assuming DB connection
 
 if (!isset($_SESSION['user_id'])) {
     echo "<script>window.location.href='login.php';</script>";
@@ -88,4 +88,4 @@ endif; ?>
     </div>
 </div>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

@@ -1,5 +1,5 @@
 <?php
-include 'config.php';
+include __DIR__ . '/includes/config.php';
 // Start session if not already started (handled in header, but good to be safe if header not included yet, though here we include header)
 // Actually we need session start before header usually if we use session logic inside header.
 // header.php handles session_start check.
@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['role'] = $row['role'];
 
             if ($row['role'] == 'admin') {
-                header("Location: admin_dashboard.php");
+                header("Location: /ease-meds/admin/dashboard.php");
             } else {
                 header("Location: index.php");
             }
@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
      If we process POST before header, we need to start session manually if we set session vars. 
      But session_start() is idempotent-ish with checks. 
      Let's just include header for the view. -->
-<?php include 'header.php'; ?>
+<?php include __DIR__ . '/includes/header.php'; ?>
 
 <div class="container">
     <div class="auth-form">
@@ -72,4 +72,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

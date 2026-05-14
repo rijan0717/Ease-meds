@@ -1,5 +1,5 @@
 <?php
-include 'config.php';
+include __DIR__ . '/includes/config.php';
 // We don't include header here immediately because we might redirect or set headers before output.
 // Although header.php output HTML so it's view content.
 // We handle logic first.
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-<?php include 'header.php'; ?>
+<?php include __DIR__ . '/includes/header.php'; ?>
 
 <div class="container">
     <div class="auth-form">
@@ -126,4 +126,4 @@ endif; ?>
     </div>
 </div>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

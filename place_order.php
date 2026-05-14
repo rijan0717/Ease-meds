@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'config.php';
+include __DIR__ . '/includes/config.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {

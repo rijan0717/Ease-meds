@@ -1,5 +1,5 @@
 <?php
-include 'config.php';
+include __DIR__ . '/includes/config.php';
 
 if (isset($_POST['token']) && isset($_POST['amount'])) {
     $token = $_POST['token'];

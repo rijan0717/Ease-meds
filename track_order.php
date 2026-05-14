@@ -1,10 +1,10 @@
 <?php
-include 'header.php';
-include 'config.php';
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/config.php';
 
 if (!isset($_GET['order_id'])) {
     echo "<div class='container'><p>Order ID missing.</p></div>";
-    include 'footer.php';
+    include __DIR__ . '/includes/footer.php';
     exit();
 }
 
@@ -14,7 +14,7 @@ $result = $conn->query($sql);
 
 if ($result->num_rows == 0) {
     echo "<div class='container'><p>Order not found.</p></div>";
-    include 'footer.php';
+    include __DIR__ . '/includes/footer.php';
     exit();
 }
 
@@ -160,4 +160,4 @@ if ($current_step_index === false && $status == 'cancelled') {
     }
 </style>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

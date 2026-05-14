@@ -1,4 +1,4 @@
-<?php include 'header.php'; ?>
+<?php include __DIR__ . '/includes/header.php'; ?>
 
 <div class="container">
     <div style="max-width: 800px; margin: 0 auto;">
@@ -56,4 +56,4 @@
     </div>
 </div>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

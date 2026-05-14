@@ -1,6 +1,6 @@
 <?php
-include 'header.php';
-include 'config.php';
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/config.php';
 ?>
 
 <div class="container">
@@ -74,4 +74,4 @@ include 'config.php';
     </div>
 </div>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

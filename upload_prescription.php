@@ -1,6 +1,6 @@
 <?php
-include 'header.php';
-include 'config.php';
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/config.php';
 
 if (!isset($_SESSION['user_id'])) {
     echo "<script>window.location.href='login.php';</script>";
@@ -135,4 +135,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES["prescription"])) {
     }
 </script>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>
