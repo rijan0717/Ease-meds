@@ -1,8 +1,6 @@
 <?php
+session_start();
 include __DIR__ . '/includes/config.php';
-// We don't include header here immediately because we might redirect or set headers before output.
-// Although header.php output HTML so it's view content.
-// We handle logic first.
 
 $error = "";
 $success = "";

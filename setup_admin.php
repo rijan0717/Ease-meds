@@ -1,5 +1,5 @@
 <?php
-include 'config.php';
+include __DIR__ . '/includes/config.php';
 
 $username = "Rijan Admin";
 $email = "rijan@gmail.com";
