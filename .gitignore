@@ -1,0 +1,12 @@
+setup_admin.php
+config.php
+uploads/
+
+.env
+*.env
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
