@@ -1,9 +1,9 @@
 <?php
 session_start();
-include '../config.php';
+include __DIR__ . '/../includes/config.php';
 
 if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
-    header("Location: ../admin_dashboard.php");
+    header("Location: /ease-meds/admin/dashboard.php");
     exit();
 }
 
@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['username'] = $row['username'];
             $_SESSION['role'] = $row['role'];
-            header("Location: ../admin_dashboard.php");
+            header("Location: /ease-meds/admin/dashboard.php");
             exit();
         } else {
             $error = "Invalid password.";
@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Ease Meds</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="/ease-meds/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
