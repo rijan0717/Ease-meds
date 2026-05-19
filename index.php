@@ -1,6 +1,31 @@
 <?php
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/config.php';
+
+$contact_success = false;
+$contact_error   = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
+    $c_name    = trim($_POST['contact_name']    ?? '');
+    $c_email   = trim($_POST['contact_email']   ?? '');
+    $c_subject = trim($_POST['contact_subject'] ?? '');
+    $c_message = trim($_POST['contact_message'] ?? '');
+
+    if (!$c_name || !$c_email || !$c_message) {
+        $contact_error = 'Please fill in all required fields.';
+    } elseif (!filter_var($c_email, FILTER_VALIDATE_EMAIL)) {
+        $contact_error = 'Please enter a valid email address.';
+    } else {
+        $stmt = $conn->prepare(
+            "INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)"
+        );
+        if ($stmt) {
+            $stmt->bind_param('ssss', $c_name, $c_email, $c_subject, $c_message);
+            $stmt->execute();
+            $stmt->close();
+        }
+        $contact_success = true;
+    }
+}
 ?>
 
 <div class="container">
@@ -112,6 +137,120 @@ include __DIR__ . '/includes/config.php';
         </div>
     </div>
 
-</div>
+    <!-- Contact Us Section -->
+    <h2 class="page-title" id="contact">Contact Us</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2.5rem; margin-bottom: 5rem; align-items: start;">
 
+        <!-- Info Cards -->
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div style="background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-map-marker-alt" style="color: #fff; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h4 style="color: var(--text-dark); margin-bottom: 0.3rem; font-size: 1rem;">Our Address</h4>
+                    <p style="color: var(--text-light); font-size: 0.95rem; line-height: 1.5;">Baneshwor, Kathmandu<br>Bagmati Province, Nepal</p>
+                </div>
+            </div>
+
+            <div style="background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-phone-alt" style="color: #fff; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h4 style="color: var(--text-dark); margin-bottom: 0.3rem; font-size: 1rem;">Phone</h4>
+                    <p style="color: var(--text-light); font-size: 0.95rem;">+977-980-000-0001</p>
+                    <p style="color: var(--text-light); font-size: 0.95rem;">+977-980-000-0002</p>
+                </div>
+            </div>
+
+            <div style="background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-envelope" style="color: #fff; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h4 style="color: var(--text-dark); margin-bottom: 0.3rem; font-size: 1rem;">Email</h4>
+                    <p style="color: var(--text-light); font-size: 0.95rem;">support@easemeds.com</p>
+                    <p style="color: var(--text-light); font-size: 0.95rem;">info@easemeds.com</p>
+                </div>
+            </div>
+
+            <div style="background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-clock" style="color: #fff; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h4 style="color: var(--text-dark); margin-bottom: 0.3rem; font-size: 1rem;">Working Hours</h4>
+                    <p style="color: var(--text-light); font-size: 0.95rem;">Sun – Fri: 8:00 AM – 8:00 PM</p>
+                    <p style="color: var(--text-light); font-size: 0.95rem;">Saturday: 9:00 AM – 5:00 PM</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div style="background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 2.5rem;">
+            <h3 style="color: var(--text-dark); margin-bottom: 0.5rem; font-size: 1.5rem;">Send Us a Message</h3>
+            <p style="color: var(--text-light); margin-bottom: 2rem; font-size: 0.95rem;">Have a question or need help with your order? We&rsquo;re here for you.</p>
+
+            <?php if ($contact_success): ?>
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-check-circle"></i>
+                <span>Thank you! Your message has been received. We&rsquo;ll get back to you shortly.</span>
+            </div>
+            <?php elseif ($contact_error): ?>
+            <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span><?php echo htmlspecialchars($contact_error); ?></span>
+            </div>
+            <?php endif; ?>
+
+            <form method="POST" action="#contact">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.9rem; color: var(--text-dark);">Full Name <span style="color:#e74c3c;">*</span></label>
+                        <input type="text" name="contact_name" placeholder="Your name" required
+                               value="<?php echo htmlspecialchars($_POST['contact_name'] ?? ''); ?>"
+                               style="width:100%; padding: 11px 14px; border: 2px solid #eee; border-radius: 8px; font-family: inherit; font-size: 0.95rem; transition: border 0.3s; outline: none;"
+                               onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='#eee'">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.9rem; color: var(--text-dark);">Email Address <span style="color:#e74c3c;">*</span></label>
+                        <input type="email" name="contact_email" placeholder="your@email.com" required
+                               value="<?php echo htmlspecialchars($_POST['contact_email'] ?? ''); ?>"
+                               style="width:100%; padding: 11px 14px; border: 2px solid #eee; border-radius: 8px; font-family: inherit; font-size: 0.95rem; transition: border 0.3s; outline: none;"
+                               onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='#eee'">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.9rem; color: var(--text-dark);">Subject</label>
+                    <input type="text" name="contact_subject" placeholder="How can we help?"
+                           value="<?php echo htmlspecialchars($_POST['contact_subject'] ?? ''); ?>"
+                           style="width:100%; padding: 11px 14px; border: 2px solid #eee; border-radius: 8px; font-family: inherit; font-size: 0.95rem; transition: border 0.3s; outline: none;"
+                           onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='#eee'">
+                </div>
+
+                <div style="margin-bottom: 1.75rem;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.9rem; color: var(--text-dark);">Message <span style="color:#e74c3c;">*</span></label>
+                    <textarea name="contact_message" rows="5" placeholder="Write your message here..." required
+                              style="width:100%; padding: 11px 14px; border: 2px solid #eee; border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: vertical; transition: border 0.3s; outline: none;"
+                              onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='#eee'"><?php echo htmlspecialchars($_POST['contact_message'] ?? ''); ?></textarea>
+                </div>
+
+                <button type="submit" name="contact_submit" class="btn-place-order" style="width: auto; padding: 13px 40px; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-paper-plane"></i> Send Message
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+    @media (max-width: 768px) {
+        #contact ~ div, #contact + div {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    </style>
+
+</div>
 <?php include __DIR__ . '/includes/footer.php'; ?>

@@ -133,6 +133,18 @@ CREATE TABLE IF NOT EXISTS coupons (
     created_at       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ------------------------------------------------------------
+-- Contact Messages
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS contact_messages (
+    id         INT          AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(150) NOT NULL,
+    email      VARCHAR(150) NOT NULL,
+    subject    VARCHAR(255),
+    message    TEXT         NOT NULL,
+    created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ============================================================
 --  SAMPLE DATA
 -- ============================================================
@@ -154,11 +166,33 @@ INSERT INTO medicines (name, category, description, price, quantity, image) VALU
 ('Thermometer Digital',  'Device',       'Accurate body temperature reading.',              450.00,   50, 'https://via.placeholder.com/300x200?text=Thermometer'),
 ('Oximeter',             'Device',       'Measure oxygen saturation.',                     1200.00,   30, 'https://via.placeholder.com/300x200?text=Oximeter'),
 ('Volini Spray',         'Pain Relief',  'Instant relief from muscle pain.',                220.00,   75, 'https://via.placeholder.com/300x200?text=Volini'),
-('Move Ointment',        'Pain Relief',  'Relief from back pain.',                          130.00,  100, 'https://via.placeholder.com/300x200?text=Move');
+('Move Ointment',        'Pain Relief',  'Relief from back pain.',                          130.00,  100, 'https://via.placeholder.com/300x200?text=Move'),
+
+-- Additional medicines
+('Metformin 500mg',     'Diabetes',     'Controls blood sugar levels in type 2 diabetes.',       250.00, 120, 'https://placehold.co/300x200/27ae60/fff?text=Metformin'),
+('Glipizide 5mg',       'Diabetes',     'Stimulates insulin release to lower blood glucose.',     180.00,  80, 'https://placehold.co/300x200/27ae60/fff?text=Glipizide'),
+('Atenolol 50mg',       'Cardiac',      'Beta-blocker for high blood pressure and angina.',       160.00, 100, 'https://placehold.co/300x200/e74c3c/fff?text=Atenolol'),
+('Amlodipine 5mg',      'Cardiac',      'Calcium channel blocker for hypertension.',              200.00,  90, 'https://placehold.co/300x200/e74c3c/fff?text=Amlodipine'),
+('Vitamin D3 1000IU',   'Supplement',   'Supports bone health and immune system.',                350.00, 200, 'https://placehold.co/300x200/f39c12/fff?text=Vitamin+D3'),
+('Multivitamin Tablets','Supplement',   'Daily essential vitamins and minerals.',                 280.00, 250, 'https://placehold.co/300x200/f39c12/fff?text=Multivitamin'),
+('Zinc 50mg',           'Supplement',   'Supports immunity, wound healing and metabolism.',       120.00, 180, 'https://placehold.co/300x200/f39c12/fff?text=Zinc'),
+('ORS Powder (Sachet)', 'Digestive',    'Oral rehydration salts for dehydration and diarrhoea.',   40.00, 500, 'https://placehold.co/300x200/3498db/fff?text=ORS'),
+('Lactulose Syrup',     'Digestive',    'Gentle laxative for constipation relief.',               220.00,  60, 'https://placehold.co/300x200/3498db/fff?text=Lactulose'),
+('Antacid Suspension',  'Digestive',    'Fast relief from acidity and indigestion.',               85.00, 140, 'https://placehold.co/300x200/3498db/fff?text=Antacid'),
+('Betadine Ointment',   'Skin Care',    'Antiseptic ointment for cuts, burns and wounds.',        150.00,  90, 'https://placehold.co/300x200/9b59b6/fff?text=Betadine'),
+('Calamine Lotion',     'Skin Care',    'Soothes itching, rashes and minor skin irritations.',    120.00, 110, 'https://placehold.co/300x200/9b59b6/fff?text=Calamine'),
+('Refresh Eye Drops',   'Eye Care',     'Lubricant eye drops for dry and tired eyes.',            280.00,  70, 'https://placehold.co/300x200/1abc9c/fff?text=Eye+Drops'),
+('Levothyroxine 50mcg', 'Thyroid',      'Hormone replacement for hypothyroidism.',               450.00,  50, 'https://placehold.co/300x200/e67e22/fff?text=Levothyroxine');
 
 -- Doctors --------------------------------------------------
 INSERT INTO doctors (name, specialty, experience, image, bio_link) VALUES
-('Dr. Ram Sharma',   'General Physician', '10 Years', 'https://via.placeholder.com/150?text=Dr+Ram',    '#'),
-('Dr. Sita Karki',   'Pediatrician',      '8 Years',  'https://via.placeholder.com/150?text=Dr+Sita',   '#'),
-('Dr. Aayush Malik', 'Cardiologist',      '15 Years', 'https://via.placeholder.com/150?text=Dr+Aayush', '#'),
-('Dr. Nita Ray',     'Dermatologist',     '5 Years',  'https://via.placeholder.com/150?text=Dr+Nita',   '#');
+('Dr. Ram Sharma',     'General Physician',  '10 Years', 'https://ui-avatars.com/api/?name=Ram+Sharma&background=0D9488&color=fff&size=200&bold=true&rounded=true',     '#'),
+('Dr. Sita Karki',     'Pediatrician',       '8 Years',  'https://ui-avatars.com/api/?name=Sita+Karki&background=EC4899&color=fff&size=200&bold=true&rounded=true',     '#'),
+('Dr. Aayush Malik',   'Cardiologist',       '15 Years', 'https://ui-avatars.com/api/?name=Aayush+Malik&background=EF4444&color=fff&size=200&bold=true&rounded=true',   '#'),
+('Dr. Nita Ray',       'Dermatologist',      '5 Years',  'https://ui-avatars.com/api/?name=Nita+Ray&background=A855F7&color=fff&size=200&bold=true&rounded=true',       '#'),
+('Dr. Priya Patel',    'Neurologist',        '12 Years', 'https://ui-avatars.com/api/?name=Priya+Patel&background=6C63FF&color=fff&size=200&bold=true&rounded=true',    '#'),
+('Dr. Rajesh Kumar',   'Orthopedic Surgeon', '18 Years', 'https://ui-avatars.com/api/?name=Rajesh+Kumar&background=E84393&color=fff&size=200&bold=true&rounded=true',   '#'),
+('Dr. Sunita Thapa',   'Gynecologist',       '14 Years', 'https://ui-avatars.com/api/?name=Sunita+Thapa&background=F7971E&color=fff&size=200&bold=true&rounded=true',   '#'),
+('Dr. Anand Joshi',    'Ophthalmologist',    '9 Years',  'https://ui-avatars.com/api/?name=Anand+Joshi&background=11998E&color=fff&size=200&bold=true&rounded=true',    '#'),
+('Dr. Meera Pandey',   'ENT Specialist',     '11 Years', 'https://ui-avatars.com/api/?name=Meera+Pandey&background=EB5757&color=fff&size=200&bold=true&rounded=true',   '#'),
+('Dr. Suresh Shrestha','Psychiatrist',       '7 Years',  'https://ui-avatars.com/api/?name=Suresh+Shrestha&background=4776E6&color=fff&size=200&bold=true&rounded=true','#');
