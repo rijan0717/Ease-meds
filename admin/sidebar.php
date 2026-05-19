@@ -47,6 +47,25 @@
                 <i class="fas fa-ticket-alt"></i> Coupons
             </a>
         </li>
+        <li>
+            <?php
+            $_sidebar_unread = 0;
+            if (isset($conn)) {
+                $_r = $conn->query("SELECT COUNT(*) AS c FROM contact_messages WHERE is_read = 0");
+                if ($_r) $_sidebar_unread = (int)$_r->fetch_assoc()['c'];
+            }
+            ?>
+            <a href="/ease-meds/admin/contact_messages.php"
+                class="<?php echo basename($_SERVER['PHP_SELF']) == 'contact_messages.php' ? 'active' : ''; ?>"
+                style="display:flex; align-items:center; justify-content:space-between;">
+                <span><i class="fas fa-envelope"></i> Contact</span>
+                <?php if ($_sidebar_unread > 0): ?>
+                <span style="background:#e74c3c; color:#fff; font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:20px; min-width:20px; text-align:center;">
+                    <?php echo $_sidebar_unread; ?>
+                </span>
+                <?php endif; ?>
+            </a>
+        </li>
         <li style="margin-top: auto;">
             <a href="/ease-meds/index.php" target="_blank">
                 <i class="fas fa-external-link-alt"></i> View Site

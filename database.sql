@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     email      VARCHAR(150) NOT NULL,
     subject    VARCHAR(255),
     message    TEXT         NOT NULL,
+    is_read    TINYINT(1)   NOT NULL DEFAULT 0,
     created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
